@@ -1,8 +1,7 @@
-FROM polyhx/cpp-server
+FROM polyhx/python-seed
 
 ADD . .
 
 EXPOSE 3000
 
-RUN make
-CMD ["./ai"]
+CMD ["python", "ai.py"]

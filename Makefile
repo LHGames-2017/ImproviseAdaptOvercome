@@ -1,5 +1,9 @@
-build:
-	g++ -std=c++11 utils.cpp ai.cpp -o ai -lboost_system -lcrypto -lssl -lcpprest -lglib-2.0 -I/usr/include/glib-2.0/ -I /usr/lib/x86_64-linux-gnu/glib-2.0/include/ -I includes/
+run:
+	sudo docker build . -t polyhx/python-test
+	sudo docker run -p 3000:3000 -t polyhx/python-test
 
-clean:
-	rm ai
+build:
+	sudo docker build . -t
+
+build-deps:
+	sudo docker build . -t polyhx/python-seed
