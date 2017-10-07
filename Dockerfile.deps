@@ -1,0 +1,7 @@
+FROM ubuntu:xenial
+
+ADD . .
+
+RUN apt-get update
+RUN apt-get install g++ git make zlib1g-dev libboost-all-dev libssl-dev -y
+RUN apt-get install libcpprest-dev libgtk2.0-dev -y
