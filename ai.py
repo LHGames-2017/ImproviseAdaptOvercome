@@ -5,27 +5,35 @@ import numpy
 
 app = Flask(__name__)
 
+
 def create_action(action_type, target):
     actionContent = ActionContent(action_type, target.__dict__)
     return json.dumps(actionContent.__dict__)
 
+
 def create_move_action(target):
     return create_action("MoveAction", target)
+
 
 def create_attack_action(target):
     return create_action("AttackAction", target)
 
+
 def create_collect_action(target):
     return create_action("CollectAction", target)
+
 
 def create_steal_action(target):
     return create_action("StealAction", target)
 
+
 def create_heal_action():
     return create_action("HealAction", "")
 
+
 def create_purchase_action(item):
     return create_action("PurchaseAction", item)
+
 
 def deserialize_map(serialized_map):
     """
@@ -48,6 +56,14 @@ def deserialize_map(serialized_map):
 
     return deserialized_map
 
+
+def reverse_range(range):
+    x = range - 1
+    while (x >= 0):
+        yield x;
+        x -= 1
+
+
 def bot():
     """
     Main de votre bot.
@@ -64,7 +80,7 @@ def bot():
     x = pos["X"]
     y = pos["Y"]
     house = p["HouseLocation"]
-    player = Player(p["Health"], p["MaxHealth"], Point(x,y),
+    player = Player(p["Health"], p["MaxHealth"], Point(x, y),
                     Point(house["X"], house["Y"]), p["Score"],
                     p["CarriedResources"], p["CarryingCapacity"])
 
@@ -78,57 +94,40 @@ def bot():
         player_info = players["Value"]
         p_pos = player_info["Position"]
         player_info = PlayerInfo(player_info["Health"],
-                                     player_info["MaxHealth"],
-                                     Point(p_pos["X"], p_pos["Y"]))
+                                 player_info["MaxHealth"],
+                                 Point(p_pos["X"], p_pos["Y"]))
 
         otherPlayers.append(player_info)
 
-
-
+    target = Point(0, 0)
+    nextPosition = Point(0, 0)
     for i in range(20):
         for j in range(20):
-            if deserialized_map[i][j] == 4:
-                target = Point(i, j)
-            #print deserialized_map[i][j].Content,
-        #print
+            if deserialized_map[j][i].Content == TileContent.Resource:
+                distanceRestant = target.__sub__(player.Position)
+                target.X = i + (distanceRestant.X)
+                target.Y = j + (distanceRestant.Y)
 
-    #nbDeplacementX = 0
-    #nbDeplacementY = 0
-    #isNegativeX = False
-    #isNegativeY = False
+                distancePoint = target.__sub__(player.Position)
 
-    distancePoint = target.__sub__(player.Position)
+            print deserialized_map[j][i].Content,
+        print
 
-    if distancePoint.X < 0:
-        nbDeplacementX = distancePoint.X * (-1)
-        isNegativeX = True
-    else:
-        isNegativeX = False
-    if distancePoint.Y < 0:
-        nbDeplacementY = distancePoint.X * (-1)
-        isNegativeY = True
-    else:
-        isNegativeY = False
+        if distancePoint.X < 0:
+            nextPosition = player.Position + Point(-1, 0)
+        elif distancePoint.X > 0:
+            nextPosition = player.Position + Point(1, 0)
+        elif distancePoint.Y < 0 & distancePoint.X == 0:
+            nextPosition = player.Position + Point(0, -1)
+        elif distancePoint.Y > 0 & distancePoint.X == 0:
+            nextPosition = player.Position + Point(0, 1)
 
-    nextPosition = target
-
-    #if isNegativeX:
-    #    for i in range(0, nbDeplacementX):
-    #        nextPosition = player.Position - Point(1, 0)
-    #elif not isNegativeX:
-    #    for i in range(0, nbDeplacementX):
-    #        nextPosition = player.Position + Point(1, 0)
-
-    #if isNegativeY:
-    #    for i in range(0, nbDeplacementY):
-    #        nextPosition = player.Position - Point(0, 1)
-    #elif not isNegativeY:
-    #    for i in range(0, nbDeplacementY):
-    #        nextPosition = player.Position + Point(0, 1)
-
-    print player.Position
+        print player.Position
+        print target
 
     return create_move_action(nextPosition)
+    # return create_move_action(Point(0, 0))
+
 
 @app.route("/", methods=["POST"])
 def reponse():
@@ -136,6 +135,7 @@ def reponse():
     Point d'entree appelle par le GameServer
     """
     return bot()
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080, debug=True)
